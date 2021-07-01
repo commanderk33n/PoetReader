@@ -6,13 +6,21 @@
 #include <cstring>
 #include <sstream>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 typedef SOCKET Socket;
 typedef PCSTR Port;
+
+#pragma comment (lib, "Ws2_32.lib")
+#pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "AdvApi32.lib")
+
+
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -21,27 +29,20 @@ typedef int Socket;
 typedef ushort Port;
 #endif
 
-
-
-
-
 #define BUFFER_SIZE 1
-
-
-
 
 class SocketWebReader
 {
 public:
-    SocketWebReader(char* host, Port port, int* error = nullptr);
+    SocketWebReader(std::string host, Port port, int* error = nullptr);
     ~SocketWebReader();
 
-    std::iostream* GetStream(char* endpoint);
+    std::iostream* GetStream(std::string endpoint);
 
 private:
     Socket sock;
-    int initWin(char* host, Port port);
-    int initUnix(char* host, Port port);
+    int initWin(std::string host, Port port);
+    int initUnix(std::string host, Port port);
 
 };
 

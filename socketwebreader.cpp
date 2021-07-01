@@ -1,6 +1,6 @@
 #include "socketwebreader.h"
 
-SocketWebReader::SocketWebReader(char* host, Port port, int* error)
+SocketWebReader::SocketWebReader(std::string host, Port port, int* error)
 {
 #ifdef WIN32
     initWin(host, port);
@@ -9,8 +9,19 @@ SocketWebReader::SocketWebReader(char* host, Port port, int* error)
 #endif
 }
 
+SocketWebReader::~SocketWebReader()
+{
+#ifdef WIN32
+    closesocket(sock);
+    WSACleanup();
+#else
+    close(sock);
+#endif
 
-int SocketWebReader::initUnix(char* host, Port port)
+}
+
+
+int SocketWebReader::initUnix(std::string host, Port port)
 {
 #ifndef WIN32
     sockaddr_in serv_addr;
@@ -40,7 +51,7 @@ int SocketWebReader::initUnix(char* host, Port port)
     return 0;
 }
 
-int SocketWebReader::initWin(char* host, Port port)
+int SocketWebReader::initWin(std::string host, Port port)
 {
 #ifdef WIN32
     struct addrinfo *result = NULL,
@@ -58,35 +69,68 @@ int SocketWebReader::initWin(char* host, Port port)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    iResult = getaddrinfo(host, port, &hints, &result);
+    // Resolve the server address and port
+    iResult = getaddrinfo(host.c_str(), port, &hints, &result);
 
     if(iResult != 0) {
         WSACleanup();
         return 2;
     }
 
+    sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+    if(sock == INVALID_SOCKET)
+        return 3;
+
+    iResult = connect(sock, ptr->ai_addr, (int)ptr->ai_addrlen);
+    if(iResult == SOCKET_ERROR) {
+      closesocket(sock);
+      sock = INVALID_SOCKET;
+      return 4;
+    }
+    freeaddrinfo(result);
+
+    if(sock == INVALID_SOCKET) {
+        WSACleanup();
+        return 3;
+    }
 
 #else
-    return 4;
+    return 10;
 #endif
     return 0;
 }
 
-std::iostream* SocketWebReader::GetStream(char* endpoint)
+std::iostream* SocketWebReader::GetStream(std::string endpoint)
 {
     char buffer[BUFFER_SIZE] = {0};
     int valread = 0;
-    char *reguest = endpoint;//"GET /Quellen/fi/dichter_liste.txt\r\n";
-
+    //char *request = endpoint;//"GET /Quellen/fi/dichter_liste.txt\r\n";
     std::stringstream* ss = new std::stringstream() ;
+
+#ifdef WIN32
+    if(send(sock, endpoint.c_str(), (int)endpoint.length(), 0) == SOCKET_ERROR)
+        return nullptr;
+
+    int iResult = 0;
+
+    do {
+       iResult = recv(sock, buffer, BUFFER_SIZE,0);
+       if(iResult > 0)
+           ss->write(buffer, BUFFER_SIZE);
+
+    } while (iResult > 0);
+
+#else
+
 
     send(sock , reguest , std::strlen(reguest) , 0 );
     while(read( sock , buffer, BUFFER_SIZE) > 0)
     {
         ss->write(buffer, BUFFER_SIZE);
     }
+#endif
 
-    std::cout << std::endl;
+
     return ss;
 }
 

@@ -7,6 +7,7 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <readpoets.h>
+#include <socketwebreader.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,6 +20,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    SocketWebReader *socketWebReader;
 
     ReadPoets *readPoets;
     QListWidget *listWidget;
