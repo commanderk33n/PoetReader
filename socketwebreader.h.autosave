@@ -1,0 +1,45 @@
+#ifndef SOCKETWEBREADER_H
+#define SOCKETWEBREADER_H
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <stdio.h>
+
+#ifdef WIN32
+#include <windows.h>
+#include <WinSock2.h>
+typedef unsigned short ushort;
+
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#endif
+
+
+
+
+ 
+#define BUFFER_SIZE 1
+ 
+typedef int Socket;
+ 
+class SocketWebReader
+{
+public:
+    SocketWebReader(char* host, ushort port, int* error = nullptr);
+    ~SocketWebReader();
+  
+ 
+    std::iostream* GetStream(char* endpoint);
+ 
+private:
+    Socket sock;
+    int initWin();
+ 
+};
+ 
+#endif // SOCKETWEBREADER_H
