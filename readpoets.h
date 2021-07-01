@@ -3,6 +3,9 @@
 
 #include <QString>
 #include <QStringList>
+#include <fstream>
+#include <string>
+
 
 
 class ReadPoets

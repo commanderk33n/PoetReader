@@ -40,10 +40,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     result->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     result->setAlignment(Qt::AlignRight);
 
-
     nameBtn->connect(nameBtn, SIGNAL( clicked() ),this, SLOT( labelTextName() ));
     birthdayBtn->connect(birthdayBtn, SIGNAL(clicked()), this, SLOT(labelTextBirthday()));
-
 
     int count = readPoets->countPoets();
 

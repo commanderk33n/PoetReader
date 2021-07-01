@@ -1,6 +1,6 @@
 #include "socketwebreader.h"
 
-SocketWebReader::SocketWebReader(char* host, ushort port, int* error)
+SocketWebReader::SocketWebReader(char* host, Port port, int* error)
 {
 #ifdef WIN32
     initWin(host, port);
@@ -10,7 +10,7 @@ SocketWebReader::SocketWebReader(char* host, ushort port, int* error)
 }
 
 
-int SocketWebReader::initUnix(char* host, ushort port)
+int SocketWebReader::initUnix(char* host, Port port)
 {
 #ifndef WIN32
     sockaddr_in serv_addr;
@@ -40,12 +40,32 @@ int SocketWebReader::initUnix(char* host, ushort port)
     return 0;
 }
 
-int SocketWebReader::initWin(char* host, ushort port)
+int SocketWebReader::initWin(char* host, Port port)
 {
 #ifdef WIN32
+    struct addrinfo *result = NULL,
+                    *ptr = NULL,
+                    hints;
     WSADATA wsaData;
-    int result = WSAStartup(MAKEWORD(2,2), &wsaData);
+    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     sock = INVALID_SOCKET;
+
+    if(iResult != 0)
+        return 1;
+
+    ZeroMemory( &hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    iResult = getaddrinfo(host, port, &hints, &result);
+
+    if(iResult != 0) {
+        WSACleanup();
+        return 2;
+    }
+
+
 #else
     return 4;
 #endif
