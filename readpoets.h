@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <fstream>
 #include <string>
+#include <socketwebreader.h>
 
 
 

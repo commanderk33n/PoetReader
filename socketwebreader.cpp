@@ -69,6 +69,7 @@ int SocketWebReader::initWin(std::string host, Port port)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
+
     // Resolve the server address and port
     iResult = getaddrinfo(host.c_str(), port, &hints, &result);
 
@@ -77,6 +78,7 @@ int SocketWebReader::initWin(std::string host, Port port)
         return 2;
     }
 
+    ptr = result;
     sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
     if(sock == INVALID_SOCKET)
         return 3;
@@ -86,6 +88,7 @@ int SocketWebReader::initWin(std::string host, Port port)
       closesocket(sock);
       sock = INVALID_SOCKET;
       return 4;
+
     }
     freeaddrinfo(result);
 
@@ -105,18 +108,19 @@ std::iostream* SocketWebReader::GetStream(std::string endpoint)
     char buffer[BUFFER_SIZE] = {0};
     int valread = 0;
     //char *request = endpoint;//"GET /Quellen/fi/dichter_liste.txt\r\n";
-    std::stringstream* ss = new std::stringstream() ;
+    std::stringstream* ss = new std::stringstream();
 
 #ifdef WIN32
-    if(send(sock, endpoint.c_str(), (int)endpoint.length(), 0) == SOCKET_ERROR)
-        return nullptr;
+
+    if(send(sock, endpoint.c_str(), endpoint.length(), 0) == SOCKET_ERROR)
+        return ss;
 
     int iResult = 0;
 
     do {
        iResult = recv(sock, buffer, BUFFER_SIZE,0);
        if(iResult > 0)
-           ss->write(buffer, BUFFER_SIZE);
+           ss->write(buffer, iResult);
 
     } while (iResult > 0);
 

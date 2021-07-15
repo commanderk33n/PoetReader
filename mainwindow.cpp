@@ -7,22 +7,6 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow)
 {
 
-    char host[12] = "172.20.4.30";
-    char *host2 = host;
-
-    auto socketWebReader = new SocketWebReader("172.20.4.30", "80");
-
-    auto ss = socketWebReader->GetStream("GET /Quellen/fi/dichter_liste.txt\r\n");
-
-    std::string s;
-    while(std::getline(*ss, s)) {
-        std::cout << s << std::endl;
-    }
-
-
-
-
-
     readPoets = new ReadPoets();
     ui->setupUi(this);
     listWidget = new QListWidget(this);
