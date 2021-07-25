@@ -3,9 +3,13 @@
 SocketWebReader::SocketWebReader(std::string host, Port port, int* error)
 {
 #ifdef WIN32
-    initWin(host, port);
+    int err = initWin(host, port);
+    if(error != nullptr)
+        *error = err;
 #else
-    initUnix(host, port);
+    int err = initUnix(host, port);
+    if(error != nullptr)
+        *error = err;
 #endif
 }
 
@@ -31,10 +35,10 @@ int SocketWebReader::initUnix(std::string host, Port port)
     }
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
+    serv_addr.sin_port = htons((ushort)atoi(port));
 
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, host, &serv_addr.sin_addr)<=0)
+    if(inet_pton(AF_INET, host.c_str(), &serv_addr.sin_addr) != 1)
     {
 
         return 2;
@@ -115,23 +119,25 @@ std::iostream* SocketWebReader::GetStream(std::string endpoint)
     if(send(sock, endpoint.c_str(), endpoint.length(), 0) == SOCKET_ERROR)
         return ss;
 
-    int iResult = 0;
-
     do {
-       iResult = recv(sock, buffer, BUFFER_SIZE,0);
-       if(iResult > 0)
-           ss->write(buffer, iResult);
+       valread = recv(sock, buffer, BUFFER_SIZE,0);
+       if(valread > 0)
+           ss->write(buffer, valread);
 
-    } while (iResult > 0);
+    } while (valread > 0);
 
 #else
 
+    if (send(sock , endpoint.c_str() , std::strlen(endpoint.c_str()) , 0 ) < 0)
+        return ss;
 
-    send(sock , reguest , std::strlen(reguest) , 0 );
-    while(read( sock , buffer, BUFFER_SIZE) > 0)
-    {
-        ss->write(buffer, BUFFER_SIZE);
-    }
+    do {
+       valread = read(sock, buffer, BUFFER_SIZE);
+       if(valread > 0)
+           ss->write(buffer, valread);
+
+    } while (valread > 0);
+
 #endif
 
 

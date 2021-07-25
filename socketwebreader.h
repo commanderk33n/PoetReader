@@ -26,7 +26,7 @@ typedef PCSTR Port;
 #include <arpa/inet.h>
 #include <unistd.h>
 typedef int Socket;
-typedef ushort Port;
+typedef const char* Port;
 #endif
 
 #define BUFFER_SIZE 1
